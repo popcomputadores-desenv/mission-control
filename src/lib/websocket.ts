@@ -23,9 +23,26 @@ import {
 const log = createClientLogger('WebSocket')
 
 // Gateway protocol version (v3 required by OpenClaw 2026.x)
-const PROTOCOL_VERSION = 3
+const PROTOCOL_VERSION = Number(process.env.GATEWAY_PROTOCOL_VERSION || 4)
 const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
+const rawScopes = process.env.GATEWAY_SCOPES
 
+const GATEWAY_SCOPES: string[] =
+  rawScopes
+    ? rawScopes.trim().startsWith('[')
+      ? JSON.parse(rawScopes)
+      : rawScopes.split(',').map(s => s.trim()).filter(Boolean)
+    : [
+  'operator.admin',
+  'operator.write',
+  'operator.read',
+  'operator.pairing',
+  'operator.approvals',
+]
+
+//Sign OpenClaw v2 device-auth payload (gateway accepts v2 and v3).
+const GATEWAY_DEVICE_AUTH_PAYLOAD = process.env.GATEWAY_DEVICE_AUTH_PAYLOAD || 'v2'
+const DISPLAY_NAME_MISSION_CONTROL = process.env.DISPLAY_NAME_MISSION_CONTROL || 'Mission Control (v2.0.1b)'		
 // Heartbeat configuration
 const PING_INTERVAL_MS = 30_000
 const MAX_MISSED_PONGS = 3
@@ -225,9 +242,10 @@ export function useWebSocket() {
     const cachedToken = getCachedDeviceToken()
 
     const clientId = DEFAULT_GATEWAY_CLIENT_ID
+    const device_payload = GATEWAY_DEVICE_AUTH_PAYLOAD
     const clientMode = 'ui'
     const role = 'operator'
-    const scopes = ['operator.admin']
+    const scopes = GATEWAY_SCOPES
     const authToken = authTokenRef.current || undefined
     const tokenForSignature = authToken ?? cachedToken ?? ''
 
@@ -237,7 +255,7 @@ export function useWebSocket() {
         const signedAt = Date.now()
         // Sign OpenClaw v2 device-auth payload (gateway accepts v2 and v3).
         const payload = [
-          'v2',
+          device_payload,
           identity.deviceId,
           clientId,
           clientMode,
@@ -270,7 +288,7 @@ export function useWebSocket() {
         maxProtocol: PROTOCOL_VERSION,
         client: {
           id: clientId,
-          displayName: 'Mission Control',
+          displayName: DISPLAY_NAME_MISSION_CONTROL,
           version: APP_VERSION,
           platform: 'web',
           mode: clientMode,

@@ -4,10 +4,24 @@ import { config } from './config'
 import { buildGatewayWebSocketUrl } from './gateway-url'
 import { getDetectedGatewayToken } from './gateway-runtime'
 
-const GATEWAY_PROTOCOL_VERSION = 3
+const GATEWAY_PROTOCOL_VERSION = Number(process.env.GATEWAY_PROTOCOL_VERSION || 4)
 const GATEWAY_CLIENT_ID = process.env.GATEWAY_CLIENT_ID || 'gateway-client'
-const GATEWAY_SCOPES = ['operator.admin', 'operator.write', 'operator.read']
+const rawScopes = process.env.GATEWAY_SCOPES
 
+const GATEWAY_SCOPES: string[] =
+  rawScopes
+    ? rawScopes.trim().startsWith('[')
+      ? JSON.parse(rawScopes)
+      : rawScopes.split(',').map(s => s.trim()).filter(Boolean)
+    : [
+  'operator.admin',
+  'operator.write',
+  'operator.read',
+  'operator.pairing',
+  'operator.approvals',
+]
+
+const DISPLAY_NAME_MISSION_CONTROL = process.env.DISPLAY_NAME_MISSION_CONTROL || 'Mission Control (v2.0.1)'		
 interface GatewayFrame {
   type?: string
   event?: string
@@ -127,7 +141,7 @@ export async function callOpenClawGateway<T = unknown>(
           maxProtocol: GATEWAY_PROTOCOL_VERSION,
           client: {
             id: GATEWAY_CLIENT_ID,
-            displayName: 'Mission Control',
+            displayName: DISPLAY_NAME_MISSION_CONTROL,
             version: APP_VERSION,
             platform: 'server',
             mode: 'backend',
