@@ -2020,6 +2020,8 @@
     "tabPipelines": "Pipelines",
     "tabFleet": "Frota",
     "selectAgent": "Selecionar agente...",
+    "noAgentsRegistered": "Nenhum agente registrado",
+    "noSessionSuffix": "sem sessão",
     "commandPlaceholder": "Enviar comando ou mensagem ao agente...",
     "send": "Enviar",
     "noTemplates": "Nenhum modelo de fluxo de trabalho ainda",
@@ -2039,26 +2041,7 @@
     "totalAgents": "Total de agentes",
     "online": "Online",
     "busy": "Ocupado",
-    "errors": "Erros",
-    "noAgentsRegistered": "Nenhum agente registrado",
-    "noSessionSuffix": "sem sessão"
-  },
-  "gatewayControl": {
-    "title": "Gateway Control",
-    "description": "Start, stop, restart, and diagnose your agent gateways.",
-    "noGatewaysInstalled": "No gateways installed",
-    "installHint": "Install Hermes Agent or OpenClaw from Settings to enable gateway features.",
-    "running": "Running",
-    "stopped": "Stopped",
-    "start": "Start",
-    "stop": "Stop",
-    "restart": "Restart",
-    "diagnose": "Diagnose",
-    "starting": "Starting...",
-    "stopping": "Stopping...",
-    "restarting": "Restarting...",
-    "diagnosing": "Diagnosing...",
-    "notInstalled": "Not installed"
+    "errors": "Erros"
   },
   "agentHistory": {
     "title": "Histórico do Agente",
@@ -2195,5 +2178,22 @@
     "tabStatus": "Status",
     "unhealthy": "Não saudável",
     "unreachable": "Inacessível"
+  },
+  "gatewayControl": {
+    "title": "Controle do Gateway",
+    "description": "Iniciar, parar, reiniciar, e diagnosticar seus gateways de agente.",
+    "noGatewaysInstalled": "Nenhum gateway instalado",
+    "installHint": "Instale o Hermes Agent ou o OpenClaw a partir das Configurações para ativar os recursos do gateway.",
+    "running": "Executando",
+    "stopped": "Parado",
+    "start": "Iniciar",
+    "stop": "Parar",
+    "restart": "Reiniciar",
+    "diagnose": "Diagnosticar",
+    "starting": "Iniciando...",
+    "stopping": "Parando...",
+    "restarting": "Reiniciando...",
+    "diagnosing": "Diagnosticando...",
+    "notInstalled": "Não instalado"
   }
 }

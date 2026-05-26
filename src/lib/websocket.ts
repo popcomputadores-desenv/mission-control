@@ -22,12 +22,19 @@ import {
 
 const log = createClientLogger('WebSocket')
 
+//Sign OpenClaw v2 device-auth payload (gateway accepts v2 and v3).
+const gatewayDevicePayload = process.env.GATEWAY_DEVICE_AUTH_PAYLOAD || 'v2'
+const displayNameMC = process.env.DISPLAY_NAME_MISSION_CONTROL || 'Mission Control (v2.0.1ws)'		
+const gatewayOrigin = process.env.MISSION_CONTROL_ORIGIN || 'http://127.0.0.1:3000'
+
+const gatewayClientID = process.env.GATEWAY_CLIENT_ID || 'gateway-client'
+
 // Gateway protocol version (v3 required by OpenClaw 2026.x)
-const PROTOCOL_VERSION = Number(process.env.GATEWAY_PROTOCOL_VERSION || 4)
-const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
+const protocolVersion = Number(process.env.GATEWAY_PROTOCOL_VERSION || 4)
+const defaultGatewayClientID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
 const rawScopes = process.env.GATEWAY_SCOPES
 
-const GATEWAY_SCOPES: string[] =
+const gatewayScopes: string[] =
   rawScopes
     ? rawScopes.trim().startsWith('[')
       ? JSON.parse(rawScopes)
@@ -40,9 +47,6 @@ const GATEWAY_SCOPES: string[] =
   'operator.approvals',
 ]
 
-//Sign OpenClaw v2 device-auth payload (gateway accepts v2 and v3).
-const GATEWAY_DEVICE_AUTH_PAYLOAD = process.env.GATEWAY_DEVICE_AUTH_PAYLOAD || 'v2'
-const DISPLAY_NAME_MISSION_CONTROL = process.env.DISPLAY_NAME_MISSION_CONTROL || 'Mission Control (v2.0.1b)'		
 // Heartbeat configuration
 const PING_INTERVAL_MS = 30_000
 const MAX_MISSED_PONGS = 3
@@ -241,11 +245,11 @@ export function useWebSocket() {
 
     const cachedToken = getCachedDeviceToken()
 
-    const clientId = DEFAULT_GATEWAY_CLIENT_ID
-    const device_payload = GATEWAY_DEVICE_AUTH_PAYLOAD
+    const clientId = defaultGatewayClientID
+    const device_payload = gatewayDevicePayload
     const clientMode = 'ui'
     const role = 'operator'
-    const scopes = GATEWAY_SCOPES
+    const scopes = gatewayScopes
     const authToken = authTokenRef.current || undefined
     const tokenForSignature = authToken ?? cachedToken ?? ''
 
@@ -284,11 +288,11 @@ export function useWebSocket() {
       method: 'connect',
       id: nextRequestId(),
       params: {
-        minProtocol: PROTOCOL_VERSION,
-        maxProtocol: PROTOCOL_VERSION,
+        minProtocol: protocolVersion,
+        maxProtocol: protocolVersion,
         client: {
           id: clientId,
-          displayName: DISPLAY_NAME_MISSION_CONTROL,
+          displayName: displayNameMC,
           version: APP_VERSION,
           platform: 'web',
           mode: clientMode,
