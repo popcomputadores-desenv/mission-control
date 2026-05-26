@@ -1428,6 +1428,26 @@ const migrations: Migration[] = [
       db.exec(`ALTER TABLE mcp_call_log ADD COLUMN signature TEXT DEFAULT NULL`)
       db.exec(`ALTER TABLE mcp_call_log ADD COLUMN public_key TEXT DEFAULT NULL`)
     }
+  },
+  {
+    id: '051_task_artifacts',
+    up(db: Database.Database) {
+      // Task artifacts tracking: vincular archivos creados con sus tareas
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS task_artifacts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          task_id INTEGER NOT NULL,
+          file_path TEXT NOT NULL,
+          file_type TEXT,
+          file_size INTEGER,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          metadata TEXT,
+          FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_task_artifacts_task_id ON task_artifacts(task_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_task_artifacts_file_path ON task_artifacts(file_path)`)
+    }
   }
 ]
 

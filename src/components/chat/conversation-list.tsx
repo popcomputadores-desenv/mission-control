@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useMissionControl, Conversation } from '@/store'
+import { useMissionControl, Conversation, Agent } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 import { Button } from '@/components/ui/button'
@@ -136,6 +136,7 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
     sessionAttention,
     setSessionAttention,
     addSplitPane,
+    agents,
   } = useMissionControl()
   const [search, setSearch] = useState('')
   const [initialLoading, setInitialLoading] = useState(conversations.length === 0)
@@ -481,8 +482,57 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
     )
   }
 
+  const visibleAgents = agents.filter((a: Agent) => !a.hidden)
+
   return (
     <div className="flex flex-col h-full bg-card">
+      {/* Agents section */}
+      {visibleAgents.length > 0 && (
+        <div className="px-3 pt-3 pb-2 border-b border-border flex-shrink-0">
+          <div className="mb-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Agents</div>
+          <div className="flex flex-col gap-1">
+            {visibleAgents.map((agent: Agent) => {
+              const isActive = activeConversation === `agent_${agent.name}`
+              const statusColor = agent.status === 'busy'
+                ? 'bg-green-500'
+                : agent.status === 'idle'
+                  ? 'bg-yellow-500'
+                  : agent.status === 'error'
+                    ? 'bg-red-500'
+                    : 'bg-muted-foreground/30'
+              return (
+                <button
+                  key={agent.id}
+                  type="button"
+                  onClick={() => onNewConversation(agent.name)}
+                  className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left transition-colors ${
+                    isActive
+                      ? 'bg-accent/60 border border-primary/30'
+                      : 'hover:bg-accent/30 border border-transparent'
+                  }`}
+                >
+                  <div className="relative flex-shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                      {agent.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-card ${statusColor}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-foreground truncate">{agent.name}</div>
+                    {agent.role && (
+                      <div className="text-[10px] text-muted-foreground/50 truncate">{agent.role}</div>
+                    )}
+                  </div>
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/30 flex-shrink-0">
+                    <path d="M6 3l5 5-5 5" />
+                  </svg>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="p-3 border-b border-border flex-shrink-0">
         <div className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">

@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { getDatabase, db_helpers } from './db'
-import { callOpenClawGateway } from './openclaw-gateway'
+import { callOpenClawGateway, callGatewayAgentHTTP } from './openclaw-gateway'
 import { eventBus } from './event-bus'
 import { logger } from './logger'
 import { config } from './config'
@@ -104,6 +104,20 @@ function buildTaskPrompt(task: DispatchableTask, rejectionFeedback?: string | nu
 
   lines.push('', 'Complete this task and provide your response. Be concise and actionable.')
   return lines.join('\n')
+}
+
+/** Extract first valid JSON object from raw stdout (handles surrounding text/warnings). */
+function parseGatewayJson(raw: string): any | null {
+  const trimmed = String(raw || '').trim()
+  if (!trimmed) return null
+  const start = trimmed.indexOf('{')
+  const end = trimmed.lastIndexOf('}')
+  if (start < 0 || end < start) return null
+  try {
+    return JSON.parse(trimmed.slice(start, end + 1))
+  } catch {
+    return null
+  }
 }
 
 interface AgentResponseParsed {
@@ -1330,6 +1344,10 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
         // Step 1: Invoke via gateway (new session)
         const gatewayAgentId = resolveGatewayAgentId(task)
         const dispatchModel = resolveTaskDispatchModelOverride(task)
+        agentResponse = await callGatewayAgentHTTP(
+          { message: prompt, agentId: gatewayAgentId, ...(dispatchModel ? { model: dispatchModel } : {}) },
+          300_000,
+        )
         const invokeParams: Record<string, unknown> = {
           message: prompt,
           agentId: gatewayAgentId,

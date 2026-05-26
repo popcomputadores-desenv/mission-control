@@ -265,6 +265,31 @@ export async function POST(
       );
     }
     
+    // Auto-detectar archivos mencionados en el comentario y registrarlos como artifacts
+    // Patrón: workspace/[path/]file.ext (incluyendo workspace/workspace/ duplicado)
+    const workspaceFilePattern = /workspace\/(?:workspace\/)?([^\s\)]+\.\w+)/g;
+    const matches = [...content.matchAll(workspaceFilePattern)];
+    
+    if (matches.length > 0) {
+      const artifactStmt = db.prepare(`
+        INSERT OR IGNORE INTO task_artifacts (task_id, file_path, created_at)
+        VALUES (?, ?, ?)
+      `);
+      
+      matches.forEach((match) => {
+        const fullPath = match[0]; // e.g., "workspace/file.xlsx" o "workspace/workspace/file.xlsx"
+        const cleanPath = fullPath.replace(/workspace\/workspace\//, 'workspace/');
+        
+        try {
+          artifactStmt.run(taskId, cleanPath, now);
+          logger.info({ taskId, filePath: cleanPath }, 'Auto-registered artifact from comment');
+        } catch (err) {
+          // Si ya existe, ignoramos el error (INSERT OR IGNORE)
+          logger.debug({ err, taskId, filePath: cleanPath }, 'Artifact already registered or failed');
+        }
+      });
+    }
+    
     // Fetch the created comment
     const createdComment = db
       .prepare('SELECT * FROM comments WHERE id = ? AND workspace_id = ?')

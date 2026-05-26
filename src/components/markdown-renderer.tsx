@@ -19,11 +19,33 @@ function getPreviewContent(content: string): string {
   return `${firstParagraph.slice(0, 240)}...`
 }
 
+/**
+ * Convierte referencias de workspace en enlaces clickables
+ * Detecta: workspace/file.ext o workspace/workspace/file.ext (duplicado)
+ * Convierte a: [workspace/file.ext](/workspace?file=file.ext)
+ */
+function convertWorkspaceReferencesToLinks(content: string): string {
+  // Patrón para detectar workspace/[path] que NO estén ya en un enlace markdown
+  // Maneja tanto workspace/ como workspace/workspace/ (duplicado)
+  const workspacePattern = /(?<!\[)(?<!\()workspace\/(?:workspace\/)?([^\s\)]+\.\w+)(?!\))/g
+  
+  return content.replace(workspacePattern, (match, filePath) => {
+    // Limpiamos el path eliminando duplicados como workspace/workspace/
+    const cleanPath = match.replace(/workspace\/workspace\//, 'workspace/')
+    const fileName = filePath
+    
+    // Retornamos un enlace markdown
+    return `[${cleanPath}](/workspace?file=${encodeURIComponent(fileName)})`
+  })
+}
+
 export function MarkdownRenderer({ content, preview = false }: MarkdownRendererProps) {
   if (!content?.trim()) return null
 
   const cleaned = stripHtml(content)
-  const markdownContent = preview ? getPreviewContent(content) : cleaned
+  // Convertimos referencias a workspace en enlaces clickables
+  const withWorkspaceLinks = convertWorkspaceReferencesToLinks(cleaned)
+  const markdownContent = preview ? getPreviewContent(content) : withWorkspaceLinks
 
   return (
     <div className={`prose prose-invert max-w-none ${preview ? 'text-xs' : 'text-sm'}`}>
@@ -53,11 +75,20 @@ export function MarkdownRenderer({ content, preview = false }: MarkdownRendererP
               {children}
             </blockquote>
           ),
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            // Si es un enlace a workspace, no abrir en nueva pestaña
+            const isWorkspaceLink = href?.startsWith('/workspace?')
+            return (
+              <a 
+                href={href} 
+                target={isWorkspaceLink ? '_self' : '_blank'} 
+                rel={isWorkspaceLink ? undefined : 'noopener noreferrer'} 
+                className="text-blue-400 hover:text-blue-300 underline"
+              >
+                {children}
+              </a>
+            )
+          },
           strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
           em: ({ children }) => <em className="italic text-foreground/90">{children}</em>,
         }}

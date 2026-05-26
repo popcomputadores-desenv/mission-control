@@ -9,6 +9,7 @@ import { Dashboard } from '@/components/dashboard/dashboard'
 import { LogViewerPanel } from '@/components/panels/log-viewer-panel'
 import { CronManagementPanel } from '@/components/panels/cron-management-panel'
 import { MemoryBrowserPanel } from '@/components/panels/memory-browser-panel'
+import { WorkspaceBrowserPanel } from '@/components/panels/workspace-browser-panel-simple'
 import { CostTrackerPanel } from '@/components/panels/cost-tracker-panel'
 import { TaskBoardPanel } from '@/components/panels/task-board-panel'
 import { ActivityFeedPanel } from '@/components/panels/activity-feed-panel'
@@ -558,6 +559,8 @@ function ContentRouter({ tab }: { tab: string }) {
       return <CronManagementPanel />
     case 'memory':
       return <MemoryBrowserPanel />
+    case 'workspace':
+      return <WorkspaceBrowserPanel />
     case 'cost-tracker':
     case 'tokens':
     case 'agent-costs':

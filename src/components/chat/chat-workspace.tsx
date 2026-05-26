@@ -554,6 +554,7 @@ function SessionConversationView({
   const [continuePrompt, setContinuePrompt] = useState('')
   const [continueBusy, setContinueBusy] = useState(false)
   const [continueError, setContinueError] = useState<string | null>(null)
+  const [lastReply, setLastReply] = useState<string | null>(null)
   const [nameDraft, setNameDraft] = useState(session.displayName || '')
   const [colorDraft, setColorDraft] = useState(session.colorTag || '')
   const [prefBusy, setPrefBusy] = useState(false)
@@ -575,13 +576,14 @@ function SessionConversationView({
     setColorDraft(session.colorTag || '')
     setPrefError(null)
     setContinueError(null)
+    setLastReply(null)
   }, [session.prefKey, session.displayName, session.colorTag])
 
   useEffect(() => {
     const container = transcriptScrollRef.current
     if (!container) return
     container.scrollTop = container.scrollHeight
-  }, [messages, loading])
+  }, [messages, loading, lastReply])
 
   const handleContinueSession = async () => {
     const prompt = continuePrompt.trim()
@@ -589,6 +591,7 @@ function SessionConversationView({
 
     setContinueBusy(true)
     setContinueError(null)
+    setLastReply(null)
     try {
       if (isGatewaySession) {
         // Gateway sessions: forward message to the agent via chat messages API
@@ -636,6 +639,9 @@ function SessionConversationView({
           throw new Error(data?.error || 'Failed to continue session')
         }
         setContinuePrompt('')
+        if (typeof data?.reply === 'string' && data.reply.trim()) {
+          setLastReply(data.reply.trim())
+        }
         // The reply from `data.reply` is intentionally not surfaced inline here:
         // claude has already written both the user prompt and the assistant
         // reply to the host session jsonl, and onRefreshTranscript() pulls them
@@ -805,7 +811,6 @@ function SessionConversationView({
           via onRefreshTranscript(); only show transient errors here so the
           input row stays anchored to the bottom regardless of reply size. */}
       <div className="border-t border-border/50 px-4 py-2">
-        {continueError && <div className="mb-1 text-xs text-red-400">{continueError}</div>}
         <div className="flex items-center gap-2">
           <span className={`font-mono-tight text-xs ${isGatewaySession ? 'text-cyan-400/60' : 'text-green-400/60'}`}>{isGatewaySession ? '>' : '$'}</span>
           <input
@@ -830,6 +835,12 @@ function SessionConversationView({
             {continueBusy ? '...' : 'Send'}
           </Button>
         </div>
+        {continueError && <div className="mt-1 text-xs text-red-400">{continueError}</div>}
+        {lastReply && (
+          <div className="mt-2 border-l-2 border-primary/30 pl-3">
+            <div className="font-mono-tight text-xs leading-relaxed text-foreground whitespace-pre-wrap">{lastReply}</div>
+          </div>
+        )}
       </div>
     </div>
   )
