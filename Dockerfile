@@ -11,6 +11,7 @@ FROM base AS deps
 # Copy only dependency manifests first for better layer caching
 COPY package.json ./
 COPY pnpm-lock.yaml* ./
+COPY pnpm-workspace.yaml ./
 # better-sqlite3 requires native compilation tools
 RUN apt-get update && apt-get install -y python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN if [ -f pnpm-lock.yaml ]; then \
@@ -60,14 +61,14 @@ ENV GATEWAY_CLIENT_ID=${GATEWAY_CLIENT_ID}
 ENV GATEWAY_DEVICE_AUTH_PAYLOAD=${GATEWAY_DEVICE_AUTH_PAYLOAD}
 # ────────────────────────────────────────────────────────────────────────────
 
-RUN pnpm build
+RUN NODE_OPTIONS=--max-old-space-size=3072 pnpm build
 
 # ── Stage 3: runtime hardened ──────────────────────────────────
 FROM node:22.22.0-slim AS runtime
 
 ARG MC_VERSION=dev
-LABEL org.opencontainers.image.source="https://github.com/builderz-labs/mission-control"
-LABEL org.opencontainers.image.description="Mission Control - operations dashboard"
+LABEL org.opencontainers.image.source="https://github.com/popcomputadores-desenv/mission-control.git"
+LABEL org.opencontainers.image.description="Mission Control - Dashboard de Operações"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.version="${MC_VERSION}"
 
