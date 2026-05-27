@@ -428,7 +428,7 @@ async function getAvailableModels() {
     // Use Ollama HTTP API instead of `ollama list` CLI.
     // On macOS desktop app installs, spawning CLI commands can restart/crash the GUI process.
     const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434').replace(/\/+$/, '').replace(/\/v1$/, '')
-    const res = await fetch(`${ollamaBaseUrl}/api/tags`, {
+    const res = await fetch('${ollamaBaseUrl}/api/tags', {
       signal: AbortSignal.timeout(5000),
     })
 
