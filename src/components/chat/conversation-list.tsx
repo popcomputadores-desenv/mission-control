@@ -504,7 +504,7 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
                 <button
                   key={agent.id}
                   type="button"
-                  onClick={() => onNewConversation(agent.name)}
+                  onClick={() => _onNewConversation(agent.name)}
                   className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left transition-colors ${
                     isActive
                       ? 'bg-accent/60 border border-primary/30'

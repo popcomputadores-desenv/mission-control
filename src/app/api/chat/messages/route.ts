@@ -161,7 +161,7 @@ async function callOpenClawCompletionsHttp(
 
       const data = await response.json()
       if (!response.ok) {
-        // "model not found" or "invalid model" — try next
+        // "model not found" or "invalid model" â€” try next
         logger.warn({ model, status: response.status, data }, 'callOpenClawCompletionsHttp: model attempt failed')
         continue
       }

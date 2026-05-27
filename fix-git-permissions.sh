@@ -6,7 +6,7 @@
 #   ./fix-git-permissions.sh /path/to/repo
 #   ./fix-git-permissions.sh /parent/dir --all   # recurse all git repos under a parent dir
 
-set -euo pipefail
+set -Eeuo pipefail
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'

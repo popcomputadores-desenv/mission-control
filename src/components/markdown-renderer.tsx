@@ -25,7 +25,7 @@ function getPreviewContent(content: string): string {
  * Convierte a: [workspace/file.ext](/workspace?file=file.ext)
  */
 function convertWorkspaceReferencesToLinks(content: string): string {
-  // Patrón para detectar workspace/[path] que NO estén ya en un enlace markdown
+  // PatrÃ³n para detectar workspace/[path] que NO estÃ©n ya en un enlace markdown
   // Maneja tanto workspace/ como workspace/workspace/ (duplicado)
   const workspacePattern = /(?<!\[)(?<!\()workspace\/(?:workspace\/)?([^\s\)]+\.\w+)(?!\))/g
   
@@ -76,7 +76,7 @@ export function MarkdownRenderer({ content, preview = false }: MarkdownRendererP
             </blockquote>
           ),
           a: ({ href, children }) => {
-            // Si es un enlace a workspace, no abrir en nueva pestaña
+            // Si es un enlace a workspace, no abrir en nueva pestaÃ±a
             const isWorkspaceLink = href?.startsWith('/workspace?')
             return (
               <a 
